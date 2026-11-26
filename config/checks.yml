@@ -1,0 +1,101 @@
+# Data quality checks for the silver layer.
+#
+# Each check is a SQL query that COUNTS THE ROWS THAT BREAK A RULE.
+# 0 means the check passes. Anything else:
+#   severity: error  -> FAIL. The data cannot be trusted until it is fixed.
+#   severity: warn   -> WARN. Worth investigating, but the data is usable.
+#
+# Rows that break a rule are flagged, never deleted.
+# To add a check, add an entry here. No Python changes are needed.
+
+checks:
+  # Completeness
+  - name: no_rows_lost
+    severity: error
+    description: Silver has exactly as many rows as bronze
+    sql: >
+      SELECT ABS((SELECT COUNT(*) FROM bronze.epd_raw)
+               - (SELECT COUNT(*) FROM silver.prescribing))
+
+  - name: mandatory_fields_present
+    severity: error
+    description: Every row has a month, practice code and medicine code
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE raw_year_month IS NULL OR practice_code IS NULL OR bnf_presentation_code IS NULL
+
+  # Validity: did every value convert to the right type?
+  - name: month_is_a_date
+    severity: error
+    description: Every month can be read as a date
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE raw_year_month IS NOT NULL AND month_start IS NULL
+
+  - name: numbers_are_numbers
+    severity: error
+    description: Items are whole numbers; quantity, NIC and cost are numbers
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE (raw_items       IS NOT NULL AND items           IS NULL)
+         OR (raw_quantity    IS NOT NULL AND quantity        IS NULL)
+         OR (raw_nic         IS NOT NULL AND nic_gbp         IS NULL)
+         OR (raw_actual_cost IS NOT NULL AND actual_cost_gbp IS NULL)
+
+  # Consistency
+  - name: month_matches_source_file
+    severity: error
+    description: Each row's month matches the monthly file it came from
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE month_start <> source_month_start
+
+  - name: in_scope_area
+    severity: error
+    description: Every row is from the configured area (sub-ICB 13T00)
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing WHERE pco_code <> '13T00'
+
+  - name: in_scope_medicines
+    severity: error
+    description: Every row is an antibacterial drug (BNF section 5.1)
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE bnf_presentation_code NOT LIKE '0501%'
+
+  # Plausibility
+  - name: items_positive
+    severity: warn
+    description: Every row has at least one item prescribed
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing WHERE items <= 0
+
+  - name: cost_not_negative
+    severity: warn
+    description: No row has a negative cost
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE actual_cost_gbp < 0 OR nic_gbp < 0
+
+  - name: practice_code_format
+    severity: warn
+    description: Practice codes look like one letter then five digits (e.g. A86001)
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE NOT regexp_full_match(practice_code, '[A-Z][0-9]{5}')
+
+  - name: unidentified_flag_valid
+    severity: warn
+    description: The unidentified flag is only Y or N
+    sql: >
+      SELECT COUNT(*) FROM silver.prescribing
+      WHERE raw_unidentified IS NOT NULL AND is_unidentified IS NULL
+
+  # Uniqueness
+  - name: no_duplicate_rows
+    severity: warn
+    description: No two rows share month, practice, medicine, SNOMED code and pack quantity
+    sql: >
+      SELECT COUNT(*) - COUNT(DISTINCT (month_start, practice_code,
+             bnf_presentation_code, snomed_code, quantity))
+      FROM silver.prescribing

@@ -49,7 +49,7 @@ Each one is written so that a test can prove it.
 | AC3 | Every row records its source file and load time | Bronze |
 | AC4 | Every load attempt is logged with a status, including failures | Bronze |
 | AC5 | A month missing from the source is reported, not silently skipped | Bronze |
-| AC6 | To be written with the silver layer (types, valid codes, no negative items) | Silver |
+| AC6 | Silver keeps every bronze row; values are typed; rows that break a rule are flagged by a check, never deleted | Silver |
 | AC7 | To be written with the gold layer (totals reconcile back to bronze) | Gold |
 
 ## Assumptions and risks
