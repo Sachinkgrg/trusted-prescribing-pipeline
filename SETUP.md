@@ -41,7 +41,7 @@ You know it worked when the terminal prompt starts with `(.venv)`.
 pytest
 ```
 
-Expected: `32 passed`. These tests do not use the internet.
+Expected: `37 passed`. These tests do not use the internet.
 
 ## 5. Check the portal
 
