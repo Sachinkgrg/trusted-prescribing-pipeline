@@ -57,7 +57,7 @@ NHSBSA Open Data API
 
 ## Testing and quality
 
-- **37 automated tests** (`pytest`), run on every push by GitHub Actions. They run offline against a stand-in for the API.
+- **38 automated tests** (`pytest`), run on every push by GitHub Actions. They run offline against a stand-in for the API.
 - **12 data quality checks** across completeness, validity, consistency, plausibility and uniqueness.
 - **Three-level reconciliation**: source to bronze, bronze to silver, silver to gold.
 - **Documented test approach**: [requirements and acceptance criteria](docs/01-requirements.md), [test plan with 16 traced test cases](docs/02-test-plan.md), and defect reports:
@@ -76,6 +76,7 @@ python -m pipeline.discover    # check what the portal holds
 python -m pipeline.ingest      # load every configured month into bronze
 python -m pipeline.silver      # clean, run quality checks
 python -m pipeline.report      # build gold, charts and findings
+python -m pipeline.export      # CSV files for Power BI
 python -m pipeline.peek        # look inside the warehouse
 ```
 
@@ -92,6 +93,8 @@ Full Windows setup steps are in [SETUP.md](SETUP.md).
 | `pipeline/ingest.py`, `pipeline/bronze.py` | Load, reconcile and log into bronze |
 | `pipeline/silver.py` | Build silver and run the quality checks |
 | `pipeline/report.py` | Build gold, reconcile, draw charts, write findings |
+| `pipeline/export.py` | Export gold tables to CSV for Power BI |
+| `powerbi/` | Power BI dashboard (.pbix) and screenshot |
 | `pipeline/discover.py`, `pipeline/peek.py` | Explore the source and the warehouse |
 | `tests/` | Automated tests |
 | `docs/` | Requirements, test plan, defect reports |
@@ -99,7 +102,7 @@ Full Windows setup steps are in [SETUP.md](SETUP.md).
 
 ## Tools
 
-Python, SQL, DuckDB, REST API, JSON, YAML, pytest, matplotlib, Git, GitHub Actions.
+Python, SQL, DuckDB, REST API, JSON, YAML, pytest, matplotlib, Power BI, Git, GitHub Actions.
 
 ## Roadmap
 
@@ -109,7 +112,7 @@ Python, SQL, DuckDB, REST API, JSON, YAML, pytest, matplotlib, Git, GitHub Actio
 - [x] Gold: reporting tables reconciled to silver
 - [x] Test plan, defect reports, CI on every push
 - [x] Charts and findings generated from data
-- [ ] Power BI dashboard on the gold tables
+- [x] Power BI dashboard on the gold tables: ![Power BI dashboard](powerbi/dashboard.png)
 - [ ] Resolve OBS-001 against the NHS Organisation Data Service
 - [ ] Run the pipeline on a cloud platform (Databricks)
 

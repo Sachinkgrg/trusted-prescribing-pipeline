@@ -18,7 +18,7 @@ stakeholder can trust: complete, correct, consistent and traceable to source.
 
 | Level | What it tests | How | When it runs |
 |---|---|---|---|
-| **Unit and component tests** | Each piece of code behaves as designed, including failure cases | `pytest`, 37 tests, offline, using a stand-in for the API and realistic sample rows | Every change, locally and on every push (GitHub Actions) |
+| **Unit and component tests** | Each piece of code behaves as designed, including failure cases | `pytest`, 38 tests, offline, using a stand-in for the API and realistic sample rows | Every change, locally and on every push (GitHub Actions) |
 | **Pipeline reconciliation** | Nothing is lost or invented between layers | Source API count = bronze rows (per month); bronze = silver rows; gold totals = silver totals | Every pipeline run |
 | **Data quality checks** | The real data obeys business rules | 12 SQL checks in `config/checks.yml`, results stored in `silver.dq_results` | Every pipeline run |
 

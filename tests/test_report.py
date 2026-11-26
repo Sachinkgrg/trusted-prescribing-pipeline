@@ -75,3 +75,13 @@ def test_findings_charts_and_readme(warehouse, tmp_path):
     readme.write_text(f"intro\n{START}\nold\n{END}\noutro\n", encoding="utf-8")
     assert update_readme("new findings", readme)
     assert readme.read_text(encoding="utf-8") == f"intro\n{START}\nnew findings\n{END}\noutro\n"
+
+
+def test_export_writes_csv_files_for_power_bi(warehouse, tmp_path):
+    from pipeline.export import export
+
+    counts = export(warehouse, tmp_path)
+    assert counts["prescribing"] == 11
+    assert counts["monthly_summary"] == 2
+    header = (tmp_path / "monthly_summary.csv").read_text(encoding="utf-8").splitlines()[0]
+    assert header.startswith("month_start,practices,prescription_lines,items,cost_gbp")
