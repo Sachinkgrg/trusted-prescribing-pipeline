@@ -1,0 +1,26 @@
+# Everything the pipeline needs to know about a source lives here.
+# To add a new source or change the slice of data, edit this file.
+# No Python changes are needed. This is what "metadata-driven" means.
+
+api:
+  base_url: https://opendata.nhsbsa.net/api/3/action/
+  timeout_seconds: 120
+  retries: 3
+
+warehouse:
+  path: data/warehouse.duckdb
+  landing_dir: data/landing
+
+sources:
+  - name: epd_antibacterials
+    description: >
+      Antibacterial drugs (BNF section 5.1) prescribed by GP practices in the
+      Newcastle Gateshead sub-ICB location, from the English Prescribing Dataset.
+    dataset_id: english-prescribing-dataset-epd-with-snomed-code
+    bronze_table: epd_raw
+    months:
+      from: "202509"
+      to: "202608"
+    # Plain SQL filter sent to the API. Keep it small: the full dataset
+    # is about 17 million rows a month.
+    where: "pco_code = '13T00' AND bnf_presentation_code LIKE '0501%'"

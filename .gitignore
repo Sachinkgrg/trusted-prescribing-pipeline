@@ -1,0 +1,7 @@
+# Data is rebuilt by running the pipeline, so it stays out of Git
+data/
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
